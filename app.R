@@ -70,6 +70,7 @@ server <- function(input, output) {
   
   TDS <- data.frame()
   wd="大雨"
+  wd="コロナ"
 
   WD <- eventReactive(input$button,{
     if(file.exists("TDS.csv"))
@@ -85,7 +86,8 @@ server <- function(input, output) {
     wd=WD()
     if(file.exists("TDS.csv"))
       TDS <- fread("TDS.csv",encoding = "UTF-8") %>%
-      data.frame()
+      data.frame() %>%
+      mutate(YMD_HM=as.POSIXct(YMD_HM))
     if(floor(second(Sys.time()))!=0&nrow(TDS)!=0)
       return()
 
