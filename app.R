@@ -51,6 +51,7 @@ ui <- fluidPage(
              dygraphOutput("Hdy"),
              dygraphOutput("cmHdy")),
       column(6,
+             downloadButton("CSV","リツイート数上位のツイートのダウンロード"),
              tableOutput("RTweet")),
       width = 12
     )
@@ -94,6 +95,8 @@ server <- function(input, output) {
       mutate(ID=paste0("Row",1:n())) %>% 
       data.frame()
     
+    day=format(max(tds$YMD_HM),"%Y%m%d_%H%M")
+    
     TDS <-
       TDS %>%
       rbind(tds) %>%
@@ -123,7 +126,13 @@ server <- function(input, output) {
       filter(Rank<=10) %>%
       select(RID,Time=JTime,Tweet=text,RTc=RTc)
     
-    write_as_csv(TDSS,"TDSS.tsv")
+    output$CSV <- downloadHandler(
+      filename = function(){
+        paste0("リツイート数上位のツイート_",day,".csv")},
+      content <- function(file){
+        write_as_csv(TDSS,file)
+      }
+    )
     
     output$Hdy <- renderDygraph({
       Comp <- 
