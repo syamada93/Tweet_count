@@ -28,12 +28,6 @@ if(!require(dygraphs))
   install.packages("dygraphs")
 library(dygraphs)
 
-write_as_csv(emojis,"ED.csv")
-ED <- fread("ED.csv") %>%
-  rename(Uni=code) %>%
-  left_join(emojis) %>%
-  mutate(Unicode=gsub("U\\+","U\\\\+",Uni))
-
 # Define UI for application that draws a histogram
 #UI####
 ui <- fluidPage(
@@ -45,7 +39,7 @@ ui <- fluidPage(
     sidebarPanel(
       textInput("wd",
                 "抽出する単語",
-                "コロナ"),
+                "大雨"),
       actionButton("button","抽出開始")
       # submitButton()
     ),
@@ -57,7 +51,7 @@ ui <- fluidPage(
              dygraphOutput("Hdy"),
              dygraphOutput("cmHdy")),
       column(6,
-             dataTableOutput("RTweet")),
+             tableOutput("RTweet")),
       width = 12
     )
   )
@@ -70,7 +64,7 @@ server <- function(input, output) {
   # refreshPlot <- reactiveTimer(intervalMs = 60000)
   
   TDS <- data.frame()
-  wd="コロナ"
+  wd="大雨"
 
   WD <- eventReactive(input$button,{
     if(file.exists("TDS.csv"))
@@ -89,11 +83,8 @@ server <- function(input, output) {
       data.frame()
     if(floor(second(Sys.time()))!=0&nrow(TDS)!=0)
       return()
-    
-    print(wd)
-    print(Sys.time())
+
     td <- search_tweets(wd,lang = "ja",n = 1000,include_rts = T)#,retryonratelimit = T)
-    print(Sys.time())
     tds <-
       td %>%
       mutate(JTime=as.POSIXct(format(created_at, tz="Japan"))) %>%
@@ -102,13 +93,6 @@ server <- function(input, output) {
       arrange(desc(status_id)) %>%
       mutate(ID=paste0("Row",1:n())) %>% 
       data.frame()
-    
-    day=max(tds$YMD_HM)
-    mid=max(tds$status_id)
-    print(paste(min(tds$JTime),max(tds$JTime),nrow(tds)))
-    
-    # write_as_csv(tds,paste0("Tweet_data/Tweet_",wd,"_",day,"_",mid,".csv"))
-    # tds <- fread(paste0("Tweet_data/Tweet_",wd,"_",day,"_",mid,".csv"))
     
     TDS <-
       TDS %>%
