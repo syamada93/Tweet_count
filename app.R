@@ -28,6 +28,11 @@ if(!require(dygraphs))
   install.packages("dygraphs")
 library(dygraphs)
 
+write_as_csv(emojis,"ED.csv")
+ED <- fread("ED.csv") %>%
+  rename(Uni=code) %>%
+  left_join(emojis) %>%
+  mutate(Unicode=gsub("U\\+","U\\\\+",Uni))
 
 # Define UI for application that draws a histogram
 #UI####
@@ -52,7 +57,7 @@ ui <- fluidPage(
              dygraphOutput("Hdy"),
              dygraphOutput("cmHdy")),
       column(6,
-             tableOutput("RTweet")),
+             dataTableOutput("RTweet")),
       width = 12
     )
   )
@@ -134,7 +139,14 @@ server <- function(input, output) {
       filter(Rank<=10) %>%
       select(RID,Time=JTime,Tweet=text,RTc=RTc)
     
-    write_as_csv(TDSS,"TDSS.csv")
+    for (i in 1:nrow(ED)) {
+      TDSS <-
+        TDSS %>%
+        mutate(Tweet=gsub(ED$Unicode[i],ED$code[i],Tweet))
+      print(c(ED$Uni[i],ED$code[i]))
+    }
+    
+    write.table(TDSS,"TDSS.tsv",row.names = F,fileEncoding = "UTF-8")
     
     output$Hdy <- renderDygraph({
       Comp <- 
@@ -185,7 +197,7 @@ server <- function(input, output) {
         dyLegend(width = 175)
     })
     
-    output$RTweet <- renderTable({
+    output$RTweet <- renderDataTable({
       TDSS %>%
         select(-RID) %>%
         mutate(Time=as.character(Time))
