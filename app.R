@@ -1,26 +1,37 @@
 library(shiny)
+
+if(!require(data.table))
+  install.packages("data.table")
 library(data.table)
+
+if(!require(dplyr))
+  install.packages("dplyr")
 library(dplyr)
+
+if(!require(tidyr))
+  install.packages("tidyr")
 library(tidyr)
-library(ggplot2)
-# install.packages("rtweet")
+
+if(!require(rtweet))
+  install.packages("rtweet")
 library(rtweet)
-library(dygraphs)
+
+if(!require(lubridate))
+  install.packages("lubridate")
 library(lubridate)
 
-# library(stringi)
-# library(ggraph)
-# library(tidygraph)
-# library(leaflet)
-# library(leafletCN)
-# library(maptools)
-# library(sf)
-# library(rsconnect)
-# library(RMeCab)
+if(!require(ggplot2))
+  install.packages("ggplot2")
+library(ggplot2)
+
+if(!require(dygraphs))
+  install.packages("dygraphs")
+library(dygraphs)
+
 
 # Define UI for application that draws a histogram
+#UI####
 ui <- fluidPage(
-  
   # Application title
   titlePanel("検索ワードのツイート数の推移"),
   
@@ -37,6 +48,7 @@ ui <- fluidPage(
     # Show a plot of the generated distribution
     mainPanel(
       column(6,
+             textOutput("TM"),
              dygraphOutput("Hdy"),
              dygraphOutput("cmHdy")),
       column(6,
@@ -46,28 +58,29 @@ ui <- fluidPage(
   )
 )
 
+#SERVER####
 # Define server logic required to draw a histogram
 server <- function(input, output) {
   refreshPlot0 <- reactiveTimer(intervalMs = 1)
   # refreshPlot <- reactiveTimer(intervalMs = 60000)
   
   TDS <- data.frame()
-  # tk=get_tokens()
-  # print(tk$app)
+  wd="コロナ"
 
   WD <- eventReactive(input$button,{
     if(file.exists("TDS.csv"))
       file.remove("TDS.csv")
-    if(file.exists("dc.txt"))
-      file.remove("dc.txt")
     return(input$wd)
   })
  
   observe({
+    output$TM <- renderText({
+      as.character(Sys.time())
+    })
     refreshPlot0()
     wd=WD()
     if(file.exists("TDS.csv"))
-      TDS <- fread("TDS.csv") %>%
+      TDS <- fread("TDS.csv",encoding = "UTF-8") %>%
       data.frame()
     if(floor(second(Sys.time()))!=0&nrow(TDS)!=0)
       return()
