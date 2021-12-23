@@ -2,11 +2,11 @@ library(shiny)
 library(data.table)
 library(dplyr)
 library(tidyr)
-library(lubridate)
 library(ggplot2)
+# install.packages("rtweet")
 library(rtweet)
 library(dygraphs)
-
+library(lubridate)
 
 # library(stringi)
 # library(ggraph)
@@ -37,7 +37,6 @@ ui <- fluidPage(
     # Show a plot of the generated distribution
     mainPanel(
       column(6,
-             textOutput("TM"),
              dygraphOutput("Hdy"),
              dygraphOutput("cmHdy")),
       column(6,
@@ -53,20 +52,18 @@ server <- function(input, output) {
   # refreshPlot <- reactiveTimer(intervalMs = 60000)
   
   TDS <- data.frame()
-  wd="コロナ"
   # tk=get_tokens()
   # print(tk$app)
 
   WD <- eventReactive(input$button,{
     if(file.exists("TDS.csv"))
       file.remove("TDS.csv")
+    if(file.exists("dc.txt"))
+      file.remove("dc.txt")
     return(input$wd)
   })
  
   observe({
-    output$TM <- renderText({
-      as.character(Sys.time())
-    })
     refreshPlot0()
     wd=WD()
     if(file.exists("TDS.csv"))
