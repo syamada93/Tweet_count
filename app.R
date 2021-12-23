@@ -123,14 +123,7 @@ server <- function(input, output) {
       filter(Rank<=10) %>%
       select(RID,Time=JTime,Tweet=text,RTc=RTc)
     
-    for (i in 1:nrow(ED)) {
-      TDSS <-
-        TDSS %>%
-        mutate(Tweet=gsub(ED$Unicode[i],ED$code[i],Tweet))
-      print(c(ED$Uni[i],ED$code[i]))
-    }
-    
-    write.table(TDSS,"TDSS.tsv",row.names = F,fileEncoding = "UTF-8")
+    write_as_csv(TDSS,"TDSS.tsv")
     
     output$Hdy <- renderDygraph({
       Comp <- 
@@ -181,7 +174,7 @@ server <- function(input, output) {
         dyLegend(width = 175)
     })
     
-    output$RTweet <- renderDataTable({
+    output$RTweet <- renderTable({
       TDSS %>%
         select(-RID) %>%
         mutate(Time=as.character(Time))
