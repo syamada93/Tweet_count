@@ -142,7 +142,7 @@ server <- function(input, output) {
     output$Hdy <- renderDygraph({
       Comp <- 
         # data.frame(YMD_HM=(max(TDC$YMD_HM)-60*60):(max(TDC$YMD_HM))) %>%
-        data.frame(YMD_HM=rep(seq(min(TDC$YMD_HM),max(TDC$YMD_HM),60),each=2),
+        data.frame(YMD_HM=rep(seq(min(TDC$YMD_HM,na.rm = T),max(TDC$YMD_HM,na.rm=T),60),each=2),
                    RT=c(F,T))
       TDCS <-
         Comp %>%
@@ -165,7 +165,7 @@ server <- function(input, output) {
     output$cmHdy <- renderDygraph({
       Comp <- 
         # data.frame(YMD_HM=(max(TDC$YMD_HM)-60*60):(max(TDC$YMD_HM))) %>%
-        data.frame(YMD_HM=rep(seq(min(TDC$YMD_HM),max(TDC$YMD_HM),60),each=2),
+        data.frame(YMD_HM=rep(seq(min(TDC$YMD_HM,na.rm = T),max(TDC$YMD_HM,na.rm = T),60),each=2),
                    RT=c(F,T))
       TDCS <-
         Comp %>%
