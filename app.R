@@ -35,13 +35,17 @@ ui <- fluidPage(
   titlePanel("検索ワードのツイート数の推移"),
   
   # Sidebar with a slider input for number of bins 
-  sidebarLayout(
+  fluidRow(
     sidebarPanel(
-      textInput("wd",
-                "抽出する単語",
-                "大雨"),
-      actionButton("button","抽出開始")
+      column(2,
+             "抽出する単語",
+             textInput("wd",
+                       NULL,
+                       "大雨")),
+      br(),
+      actionButton("button","抽出開始"),
       # submitButton()
+      width = 12
     ),
     
     # Show a plot of the generated distribution
@@ -96,6 +100,7 @@ server <- function(input, output) {
       data.frame()
     
     day=format(max(tds$YMD_HM),"%Y%m%d_%H%M")
+    md=min(tds$YMD_HM)
     
     TDS <-
       TDS %>%
@@ -150,10 +155,10 @@ server <- function(input, output) {
       
       rownames(TDCS) <- unique(Comp$YMD_HM)
       
-      dygraph(TDCS,main = paste0(max(TDC$YMD_HM)-2*60*60,"～",max(TDC$YMD_HM))) %>% #
+      dygraph(TDCS,main = paste0(max(TDC$YMD_HM)-2*60*60,"～",max(TDC$YMD_HM),br(),"ツイート数 1分ごとの推移")) %>% #
         dyOptions(stackedGraph = T, drawPoints = T, pointSize = 1, strokeWidth = 2,fillAlpha = 0.5,colors = c("red","blue"),
-                  axisLabelFontSize = 20,axisLabelWidth = 100,titleHeight = 50,labelsKMB = T) %>%
-        dyRangeSelector(height = 100,keepMouseZoom = T,dateWindow = c(max(TDC$YMD_HM)-11*60*60,max(TDC$YMD_HM)-9*60*60)) %>%
+                  axisLabelFontSize = 20,axisLabelWidth = 100,titleHeight = 30,labelsKMB = T) %>%
+        dyRangeSelector(height = 50,keepMouseZoom = T,dateWindow = c(max(TDC$YMD_HM)-11*60*60,max(TDC$YMD_HM)-9*60*60)) %>%
         dyLegend(width = 175)
     })
     
@@ -169,17 +174,19 @@ server <- function(input, output) {
         mutate(RTs=factor(RT,labels = c("Origin","Retweet"))) %>%
         group_by(RTs) %>%
         mutate(n=cumsum(n)) %>%
+        mutate(tn=1:n()) %>%
+        mutate(rate=n/tn) %>%
         ungroup() %>%
-        select(YMD_HM,RTs,n) %>%
+        select(YMD_HM,RTs,n=rate) %>%
         spread(RTs,n) %>%
         select(Retweet,Origin)
       
       rownames(TDCS) <- unique(Comp$YMD_HM)
       
-      dygraph(TDCS) %>% #,main = paste0(max(TDC$YMD_HM)-2*60*60,"～",max(TDC$YMD_HM))
+      dygraph(TDCS,main = paste0("平均ツイート数")) %>% #,main = paste0(max(TDC$YMD_HM)-2*60*60,"～",max(TDC$YMD_HM))
         dyOptions(stackedGraph = T, drawPoints = T, pointSize = 1, strokeWidth = 2,fillAlpha = 0.5,colors = c("red","blue"),
-                  axisLabelFontSize = 20,axisLabelWidth = 100,titleHeight = 50,labelsKMB = T) %>%
-        dyRangeSelector(height = 100,keepMouseZoom = T,dateWindow = c(max(TDC$YMD_HM)-11*60*60,max(TDC$YMD_HM)-9*60*60)) %>%
+                  axisLabelFontSize = 20,axisLabelWidth = 100,titleHeight = 30,labelsKMB = T) %>%
+        dyRangeSelector(height = 50,keepMouseZoom = T,dateWindow = c(max(TDC$YMD_HM)-11*60*60,max(TDC$YMD_HM)-9*60*60)) %>%
         dyLegend(width = 175)
     })
     
